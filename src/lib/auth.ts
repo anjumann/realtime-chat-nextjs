@@ -1,7 +1,9 @@
+
 import { NextAuthOptions } from "next-auth";
 import { UpstashRedisAdapter } from "@next-auth/upstash-redis-adapter";
 import { db } from "@/lib/db";
 import GoogleProvider from "next-auth/providers/google";
+
 
 function getGoogleCredentials() {
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
@@ -15,13 +17,12 @@ function getGoogleCredentials() {
 }
 
 export const authOptions: NextAuthOptions = {
-
   adapter: UpstashRedisAdapter(db),
   session: {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/login",
+    // signIn: "/login",
   },
   providers: [
     GoogleProvider({
@@ -30,7 +31,6 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-
     async jwt({ token, user }) {
       const dbUser = (await db.get(`user :${user.id}`)) as User | null;
 
@@ -48,8 +48,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      
-      if (token){
+      if (token) {
         session.user.id = token.id;
         session.user.name = token.name;
       }
@@ -57,9 +56,18 @@ export const authOptions: NextAuthOptions = {
     },
 
     redirect() {
-      return '/dashboard'
-    }
-
-
+      return "/dashboard";
+    },
+  },
+  logger: {
+    error(code, metadata) {
+      console.error(code, metadata);
+    },
+    warn(code) {
+      console.warn(code);
+    },
+    debug(code, metadata) {
+      console.debug(code, metadata);
+    },
   },
 };
